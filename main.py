@@ -454,6 +454,36 @@ def draw_footer(c):
     c.rect(0, H - 8, W, 8, PALETTE["cyan"])
 
 
+def downscale_rgb(src, src_w, src_h, dst_w, dst_h):
+    """Area-sample RGB data down to the make.fun 1024px server gate.
+
+    The artwork is authored on a 1600x1100 design grid for composition,
+    then deterministically reduced to 1024x704 so every primitive keeps its
+    relative position while the submitted PNG satisfies server dimensions.
+    """
+    out = bytearray(dst_w * dst_h * 3)
+    for y in range(dst_h):
+        y0 = y * src_h // dst_h
+        y1 = max(y0 + 1, (y + 1) * src_h // dst_h)
+        for x in range(dst_w):
+            x0 = x * src_w // dst_w
+            x1 = max(x0 + 1, (x + 1) * src_w // dst_w)
+            total_r = total_g = total_b = count = 0
+            for sy in range(y0, y1):
+                row = (sy * src_w + x0) * 3
+                for _sx in range(x0, x1):
+                    total_r += src[row]
+                    total_g += src[row + 1]
+                    total_b += src[row + 2]
+                    count += 1
+                    row += 3
+            di = (y * dst_w + x) * 3
+            out[di] = total_r // count
+            out[di + 1] = total_g // count
+            out[di + 2] = total_b // count
+    return out
+
+
 def png_bytes(width, height, rgb):
     raw_rows = []
     stride = width * 3
@@ -491,7 +521,9 @@ def main():
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, "entry.png")
     canvas = render()
-    data = png_bytes(canvas.w, canvas.h, canvas.p)
+    out_w, out_h = 1024, 704
+    scaled = downscale_rgb(canvas.p, canvas.w, canvas.h, out_w, out_h)
+    data = png_bytes(out_w, out_h, scaled)
     with open(path, "wb") as f:
         f.write(data)
     print(path)
