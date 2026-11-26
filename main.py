@@ -62,6 +62,7 @@ FONT = {
     "&": ["01100", "10010", "10100", "01000", "10101", "10010", "01101"],
     "+": ["00000", "00100", "00100", "11111", "00100", "00100", "00000"],
     "%": ["11001", "11010", "00010", "00100", "01000", "01011", "10011"],
+    "£": ["00110", "01001", "01000", "11110", "01000", "01000", "11111"],
     "!": ["00100", "00100", "00100", "00100", "00100", "00000", "00100"],
     "?": ["01110", "10001", "00001", "00010", "00100", "00000", "00100"],
     " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
@@ -448,10 +449,81 @@ def draw_markets(c, x, y):
 
 def draw_footer(c):
     c.rect_alpha(0, H - 96, W, 96, (0, 0, 0), 0.42)
-    draw_text(c, 50, H - 56, "FOUR ANCHORS. ONE DATE. GLOBAL BREADTH.", 3, PALETTE["paper"])
-    draw_text(c, 1010, H - 78, "MAKE.FUN /", 4, PALETTE["yellow"])
-    draw_text(c, 1010, H - 42, "1N20PV53", 5, PALETTE["yellow"], (0, 0, 0))
+    draw_text(c, 50, H - 56, "SIX STORIES. ONE DATE. GLOBAL BREADTH.", 3, PALETTE["paper"])
+    draw_text(c, 1000, H - 58, "MAKE.FUN / 1N20PV53", 4, PALETTE["yellow"], (0, 0, 0))
     c.rect(0, H - 8, W, 8, PALETTE["cyan"])
+
+
+def draw_story_icon(c, kind, x, y, accent):
+    if kind == "mine":
+        c.poly([(x + 18, y + 92), (x + 74, y + 22), (x + 130, y + 92)], (82, 65, 48))
+        c.rect(x + 42, y + 72, 66, 44, (36, 28, 22))
+        c.circle(x + 76, y + 96, 16, PALETTE["yellow"], True)
+        c.line(x + 25, y + 118, x + 135, y + 118, accent, 5)
+    elif kind == "tanker":
+        c.rect(x + 18, y + 62, 122, 44, (26, 33, 45))
+        c.circle(x + 46, y + 112, 13, PALETTE["ink"], True)
+        c.circle(x + 112, y + 112, 13, PALETTE["ink"], True)
+        c.circle(x + 88, y + 45, 28, PALETTE["red"], True)
+        c.poly([(x + 88, y + 8), (x + 68, y + 56), (x + 108, y + 56)], PALETTE["orange"])
+    elif kind == "tariff":
+        c.rect(x + 28, y + 28, 104, 86, (18, 36, 67))
+        c.outline_rect(x + 28, y + 28, 104, 86, accent, 4)
+        draw_text(c, x + 48, y + 48, "20%", 5, PALETTE["yellow"])
+        c.line(x + 28, y + 122, x + 132, y + 122, accent, 5)
+    elif kind == "chips":
+        c.rect(x + 34, y + 36, 92, 78, (18, 80, 48))
+        c.outline_rect(x + 34, y + 36, 92, 78, PALETTE["ink"], 4)
+        draw_text(c, x + 52, y + 56, "AI", 5, PALETTE["green"])
+        c.line(x + 24, y + 128, x + 136, y + 98, PALETTE["red"], 7)
+        c.poly([(x + 136, y + 98), (x + 103, y + 91), (x + 118, y + 121)], PALETTE["red"])
+    elif kind == "space":
+        c.circle(x + 80, y + 78, 42, (28, 54, 94), True)
+        c.ellipse_outline(x + 80, y + 78, 70, 22, PALETTE["cyan"], 0.9, thick=3)
+        c.rect(x + 70, y + 22, 22, 80, PALETTE["white"])
+        c.poly([(x + 81, y + 6), (x + 67, y + 24), (x + 95, y + 24)], PALETTE["red"])
+        c.line(x + 42, y + 70, x + 118, y + 70, PALETTE["yellow"], 4)
+    elif kind == "energy":
+        c.rect(x + 50, y + 34, 60, 100, (19, 42, 65))
+        c.outline_rect(x + 50, y + 34, 60, 100, accent, 4)
+        c.poly([(x + 85, y + 42), (x + 56, y + 92), (x + 78, y + 92), (x + 64, y + 132), (x + 110, y + 72), (x + 86, y + 72)], PALETTE["yellow"])
+    else:
+        c.circle(x + 80, y + 80, 55, accent, False)
+
+
+def draw_story_card(c, x, y, w, h, accent, region, headline, badge, kind):
+    draw_shadow_card(c, x, y, w, h, accent)
+    c.rect(x + 18, y + 28, 142, 34, accent)
+    draw_text(c, x + 32, y + 34, region, 3, PALETTE["white"], (0, 0, 0))
+    draw_story_icon(c, kind, x + 22, y + 86, accent)
+    label(c, x + 190, y + 82, headline, 4, PALETTE["ink"], w - 220, 38)
+    c.rect(x + 32, y + h - 78, w - 64, 54, PALETTE["ink"])
+    draw_text(c, x + 46, y + h - 64, badge, 4, accent)
+    c.line(x + 26, y + h - 35, x + 156, y + h - 35, accent, 5)
+
+
+def draw_ticker_row(c):
+    c.rect_alpha(70, 940, 1460, 46, (0, 0, 0), 0.38)
+    c.outline_rect(70, 940, 1460, 46, PALETTE["cyan"], 2)
+    draw_text(c, 92, 954, "TICKER: DOW ABOVE 50000 AFTER 1100-POINT FALL   ZAPORIZHZHIA BLACKOUT   HORMUZ CLAIM LABELLED", 3, PALETTE["paper"])
+
+
+def draw_v3_grid(c):
+    stories = [
+        (70, 205, PALETTE["yellow"], "ASIA", "WEST JAVA GOLD MINE FLOODED", "9 DEAD 17 TRAPPED", "mine"),
+        (570, 205, PALETTE["red"], "AFRICA", "CAIRO TANKER FIRE", "30 DEAD / 31", "tanker"),
+        (1070, 205, PALETTE["orange"], "TRADE", "US TARIFF PLAN ON 14 ECONOMIES", "UP TO 20%", "tariff"),
+        (70, 575, PALETTE["green"], "MARKETS", "AI DOUBTS HIT ASIAN CHIP STOCKS", "KOSPI -6.2%", "chips"),
+        (570, 575, PALETTE["cyan"], "SPACE", "PAKISTAN ASTRONAUT DOCKS AT TIANGONG", "SHENZHOU-24", "space"),
+        (1070, 575, PALETTE["blue"], "UK", "ENERGY PRICE CAP RISES IN JANUARY", "GBP 2166 +26%", "energy"),
+    ]
+    for x, y, accent, region, headline, badge, kind in stories:
+        draw_story_card(c, x, y, 460, 340, accent, region, headline, badge, kind)
+    # Thin connector lines create the requested map/timeline feel without clutter.
+    points = [(300, 545), (800, 545), (1300, 545), (300, 912), (800, 912), (1300, 912)]
+    for a, b in zip(points, points[1:]):
+        c.line_alpha(a[0], a[1], b[0], b[1], PALETTE["cyan"], 0.18, 3)
+    draw_ticker_row(c)
 
 
 def downscale_rgb(src, src_w, src_h, dst_w, dst_h):
@@ -508,10 +580,7 @@ def render():
     c = Canvas(W, H)
     draw_background(c)
     draw_header(c)
-    draw_ukraine(c, 70, 205)
-    draw_nvidia(c, 840, 205)
-    draw_riyadh(c, 70, 600)
-    draw_markets(c, 840, 600)
+    draw_v3_grid(c)
     draw_footer(c)
     return c
 
