@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-make.fun news-image-20261125 — V6 stdlib tactical bitmap.
-Python 3.13 stdlib only: 5x7 bitmap font scaled 2x/3x/4x, PNG writer.
+make.fun news-image-20261125 — V7 stdlib tactical bitmap (V5 base + surgical polish).
+Python 3.13 stdlib only: 5x7 bitmap font scaled 2x/4x, PNG writer.
 Output: 1024x704 PNG.
 """
 
@@ -63,25 +63,27 @@ FONT5 = {
     " ": ["00000","00000","00000","00000","00000","00000","00000"],
     "!": ["00100","00100","00100","00100","00100","00000","00100"],
     "?": ["01110","10001","00001","00010","00100","00000","00100"],
+    "^": ["00100","01110","11111","00000","00000","00000","00000"],  # fire/rocket up
+    "v": ["00000","00000","00000","11111","01110","00100","00000"],  # mine down
+    "]": ["01110","00100","00100","01110","00100","00100","01110"],  # chip/bolt block
 }
 
-# V6 Color palette (R,G,B)
+# V7 Color palette (R,G,B)
 NAVY      = (10, 15, 30)      # #0A0F1E
-CARD_BG   = (18, 26, 46)      # #121A2E
-GRID_LINE = (22, 32, 55)      # thin separators
+CARD_BG   = (22, 31, 58)      # #161F3A (lighter than V5/V6 for pop)
 TEXT      = (232, 237, 245)   # #E8EDF5
-ACCENT_Y  = (255, 179, 0)     # #FFB300
-ACCENT_R  = (255, 68, 68)     # #FF4444
-ACCENT_G  = (0, 230, 118)     # #00E676
+ACCENT_R  = (255, 68, 68)     # #FF4444 - red
+ACCENT_Y  = (255, 179, 0)     # #FFB300 - yellow
+ACCENT_G  = (0, 230, 118)     # #00E676 - green
 
-# Story data with V6 specs
+# Story data with V7 specs: 3-letter region codes, centered huge badges
 STORIES = [
-    {"region": "WJAVA", "headline": "MINE FLOOD",       "badge": "9",      "icon": "v",   "accent": ACCENT_R},
-    {"region": "CAIRO", "headline": "TANKER FIRE",      "badge": "30+",    "icon": "^",   "accent": ACCENT_R},
-    {"region": "USA",   "headline": "TARIFFS 14 ECON",  "badge": "20%",    "icon": "v",   "accent": ACCENT_Y},
-    {"region": "ASIA",  "headline": "CHIPS PLUNGE",     "badge": "6.2%",   "icon": "]",   "accent": ACCENT_G},
-    {"region": "PAK",   "headline": "ASTRONAUT DOCKS",  "badge": "1",      "icon": "^",   "accent": ACCENT_G},
-    {"region": "UK",    "headline": "ENERGY CAP +26%",  "badge": "26%",    "icon": "]",   "accent": ACCENT_Y},
+    {"region": "WJA", "icon": "v",   "headline": "WEST JAVA MINE FLOOD", "badge": "9",      "accent": ACCENT_R},
+    {"region": "CAI", "icon": "^",   "headline": "CAIRO TANKER FIRE",      "badge": "30+",    "accent": ACCENT_R},
+    {"region": "USA", "icon": "v",   "headline": "US TARIFFS 14 ECON",     "badge": "20%",    "accent": ACCENT_Y},
+    {"region": "ASI", "icon": "]",   "headline": "ASIAN CHIPS PLUNGE",     "badge": "6.2%",   "accent": ACCENT_G},
+    {"region": "PAK", "icon": "^",   "headline": "PAK ASTRONAUT TIANGONG", "badge": "1",      "accent": ACCENT_G},
+    {"region": "UK",  "icon": "]",   "headline": "UK ENERGY CAP +26%",     "badge": "26%",    "accent": ACCENT_Y},
 ]
 
 CARD_W, CARD_H = 320, 200
@@ -144,8 +146,8 @@ def draw_text(c, x, y, text, color, scale, center=False):
 def draw_header(c):
     # Header bar - navy bg
     c.rect(0, 0, W, 90, NAVY)
-    # Header text at 3x scale (15x21)
-    draw_text(c, 0, 20, "25 NOV 2026  —  WORLD BRIEFING", ACCENT_Y, 3, center=True)
+    # Header text at 2x scale (10x14)
+    draw_text(c, 0, 20, "25 NOV 2026  —  WORLD BRIEFING", ACCENT_Y, 2, center=True)
 
 def draw_card(c, idx, story):
     row = idx // 3
@@ -156,22 +158,27 @@ def draw_card(c, idx, story):
 
     # Card background
     c.rect(x, y, CARD_W, CARD_H, CARD_BG)
-    # Thin grid line separator (1px)
-    c.outline_rect(x, y, CARD_W, CARD_H, GRID_LINE, 1)
+    # Card border: 2px accent top edge, 1px others
+    c.rect(x, y, CARD_W, 2, accent)  # top edge 2px
+    c.rect(x, y+2, 1, CARD_H-2, accent)  # left
+    c.rect(x+CARD_W-1, y+2, 1, CARD_H-2, accent)  # right
+    c.rect(x, y+CARD_H-1, CARD_W, 1, accent)  # bottom
 
-    # Region tag at 2x (10x14)
-    draw_text(c, x + 16, y + 12, story["region"], TEXT, 2)
-
-    # Minimal 1px icon glyph (5x7 at 1x = 5x7)
-    icon_x = x + CARD_W - 30
-    icon_y = y + 16
+    # Tiny region icon (1px glyph = 5x5) before region tag
+    icon_x = x + 14
+    icon_y = y + 14
     draw_glyph(c, icon_x, icon_y, story["icon"], accent, 1)
+
+    # Region tag at 2x (10x14), same color as badge accent, left-aligned after icon
+    draw_text(c, x + 24, y + 12, story["region"], accent, 2)
 
     # Headline at 2x
     draw_text(c, x + 16, y + 48, story["headline"], TEXT, 2)
 
-    # HUGE badge number at 4x (20x28) - centered in lower card area
-    badge_y = y + CARD_H - 60
+    # HUGE badge number at 4x (20x28) - CENTERED vertically in card
+    # Card vertical center: y + CARD_H//2 = y + 100
+    # Badge height at 4x = 28, so top = y + 100 - 14 = y + 86
+    badge_y = y + 86
     bw = text_width(story["badge"], 4)
     bx = x + (CARD_W - bw) // 2
     draw_text(c, bx, badge_y, story["badge"], accent, 4)
