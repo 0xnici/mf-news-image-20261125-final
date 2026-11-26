@@ -1,5 +1,9 @@
 # World News Command Wall — 25 November 2026
 
+[![make.fun competition](https://make.fun/badge/news-image-20261125.svg)](https://make.fun/c/news-image-20261125)
+[![make.fun rank](https://make.fun/badge/news-image-20261125/0xnici/mf-news-image-20261125-final/rank.svg)](https://make.fun/c/news-image-20261125)
+[![make.fun reward](https://make.fun/badge/news-image-20261125/0xnici/mf-news-image-20261125-final/reward.svg)](https://make.fun/c/news-image-20261125)
+
 A deterministic make.fun news-image entry generated with Python standard library only.
 
 The program renders one editorial front page / command-center news wall for Wednesday 25 November 2026. It highlights four same-day story cards:
